@@ -1,9 +1,10 @@
-package triaje.tareaTriaje.Services;
+package triaje.tareaTriaje.services;
 
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
-import triaje.tareaTriaje.Domain.Paciente;
+
+import triaje.tareaTriaje.domain.Paciente;
 import triaje.tareaTriaje.repositories.PacienteRepository;
 
 @Service

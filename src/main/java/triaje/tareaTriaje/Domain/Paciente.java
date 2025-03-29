@@ -1,6 +1,10 @@
-package triaje.tareaTriaje.Domain;
+package triaje.tareaTriaje.domain;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+@Entity
 public class Paciente {
+    @Id
     private String dni;
     private String nombre;
     private String apellido;
