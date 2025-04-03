@@ -25,7 +25,13 @@ public class PacienteController {
   private PacienteService pacienteService;
 
   @Autowired
-  private RabbitTemplate rabitt;
+  private RabbitTemplate rabbit;
+
+  @Value("${exchange}")
+  private String exchange;
+
+  @Value("${routingKeyUser}")
+  private String routingKeyUser;
 
   @GetMapping("pacientes")
   public ResponseEntity<?> buscarPorFiltros(
@@ -41,11 +47,15 @@ public class PacienteController {
   public ResponseEntity<String> addPaciente(@RequestBody Paciente paciente) {
     boolean creado = pacienteService.addPaciente(paciente);
     if (creado) {
-      String routingKey = "pacientes." + paciente.getGrado().toLowerCase();
-      //rabitt.convertAndSend(exchange, routingKey, paciente);
-      return ResponseEntity.status(HttpStatus.CREATED).body("Paciente registrado");
-    } else {
-      return ResponseEntity.status(HttpStatus.CONFLICT).body("Error al registrar paciente");
+      try {
+        String routingKey = "pacientes." + paciente.getGrado().toLowerCase();
+        this.rabbit.convertAndSend(this.exchange, routingKey, paciente);
+        return new ResponseEntity<>("Paciente creado y mensaje enviado a RabbitMQ", HttpStatus.CREATED);
+      } catch (Exception e) {
+        System.err.println("Error enviando el mensaje a RabbitMQ: " + e.getMessage());
+        return new ResponseEntity<>("Paciente creado pero error al enviar el mensaje a RabbitMQ", HttpStatus.INTERNAL_SERVER_ERROR);
+      }
     }
+    return new ResponseEntity<>("No se pudo crear el paciente", HttpStatus.BAD_REQUEST);
   }
 }
