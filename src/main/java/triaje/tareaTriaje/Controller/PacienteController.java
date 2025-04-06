@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-
 @RestController
 @RequestMapping("/api/v1")
 public class PacienteController {
@@ -26,9 +25,6 @@ public class PacienteController {
 
   @Autowired
   private RabbitTemplate rabbit;
-
-  @Value("${exchange}")
-  private String exchange;
 
   @Value("${routingKeyUser}")
   private String routingKeyUser;
@@ -49,7 +45,9 @@ public class PacienteController {
     if (creado) {
       try {
         String routingKey = "pacientes." + paciente.getGrado().toLowerCase();
-        this.rabbit.convertAndSend(this.exchange, routingKey, paciente);
+        this.rabbit.convertAndSend("triaje-exchange", routingKey, paciente);
+        System.out.println("Enviando a cola: " + routingKey + " paciente: " + paciente.getNombre());
+
         return new ResponseEntity<>("Paciente creado y mensaje enviado a RabbitMQ", HttpStatus.CREATED);
       } catch (Exception e) {
         System.err.println("Error enviando el mensaje a RabbitMQ: " + e.getMessage());
